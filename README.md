@@ -49,3 +49,6 @@ It launches Gazebo, waits for the rover to spawn, pauses physics while perceptio
 - `tracking_world.world` - the world file (walls, boxes, pedestrian)
 - `start_project.sh` - runs everything in order
 
+## Video
+
+A low resolution video has been uploaded becasue of the file size restrictions on the GitHub :)
