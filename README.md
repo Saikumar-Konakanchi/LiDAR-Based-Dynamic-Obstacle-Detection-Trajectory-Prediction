@@ -23,11 +23,22 @@ I actually tried SLAM toolbox first. Kept running into TF and odometry issues in
 
 Split into two because perception is "what's there" and tracking is "what's it doing." Made debugging way easier.
 
-## Some things that broke along the way
+## Issue log - things that broke and how I found the cause
 
-- Gazebo's `<actor>` tag has no collision in Gazebo Classic, so the LiDAR just went straight through the pedestrian. Switched to a regular physics box with a planar_move plugin instead.
-- Markers kept showing "no transform to fixed frame" in RViz even though TF looked completely fine. Turned out perception_node and tracker_node weren't using sim time, so their timestamps didn't match Gazebo's clock. Fixed it by setting use_sim_time as a default in both nodes so it can't get forgotten again.
-- Originally wanted this running across two PCs (one for sim, one for perception), but WSL2 + Gazebo made that more pain than it was worth for the time I had, so I kept it on one machine.
+**No LiDAR collision on the pedestrian**
+- Symptom: the LiDAR scan just passed straight through the pedestrian like it wasn't there.
+- Root cause: Gazebo Classic's `<actor>` tag has no collision geometry by default.
+- Fix: swapped the actor for a regular physics box driven by a `planar_move` plugin, so it actually exists as far as the LiDAR is concerned.
+
+**RViz markers saying "no transform to fixed frame" despite TF looking fine**
+- Symptom: markers wouldn't render, but `tf2_echo` and the TF tree showed nothing wrong.
+- Root cause: `perception_node` and `tracker_node` were running on wall-clock time while Gazebo was publishing sim time - so the timestamps on outgoing messages didn't line up with what RViz expected.
+- Fix: set `use_sim_time` as a default in both nodes so it can't get forgotten again, instead of patching it per-launch.
+
+**Wanted this running across two PCs (sim on one, perception on the other)**
+- Symptom: constant ROS2 discovery/DDS issues between WSL2 instances.
+- Root cause: WSL2's networking layer doesn't play nicely with ROS2 DDS discovery out of the box, and getting it reliable would've eaten more time than it was worth for this project's scope.
+- Decision: kept it on one machine and noted the two-PC setup as a possible follow-up.
 
 ## Running it
 
@@ -51,4 +62,4 @@ It launches Gazebo, waits for the rover to spawn, pauses physics while perceptio
 
 ## Video
 
-A low resolution video has been uploaded becasue of the file size restrictions on the GitHub :)
+A low resolution video has been uploaded because of the file size restrictions on GitHub :)
